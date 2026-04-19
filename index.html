@@ -1,0 +1,60 @@
+import streamlit as st
+import pandas as pd
+
+# Configuración de la página
+st.set_page_config(page_title="Lista de Precios Inteligente", layout="wide")
+
+# Estilo personalizado (Bordes redondeados y tipografía limpia)
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f5f7f9;
+    }
+    .stDataTable {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.title("📊 Consultor de Precios")
+st.markdown("Sube tu archivo Excel para visualizar y filtrar los productos actualizados.")
+
+# Lógica de carga de archivo
+uploaded_file = st.file_uploader("Selecciona tu archivo Excel (.xlsx)", type=["xlsx"])
+
+if uploaded_file:
+    try:
+        # Lectura de datos
+        df = pd.read_excel(uploaded_file)
+        
+        # Filtro de búsqueda global
+        search_query = st.text_input("🔍 Buscar producto, modelo o categoría...", "")
+
+        if search_query:
+            # Filtra en todas las columnas para que sea más flexible
+            mask = df.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)
+            df_filtered = df[mask]
+        else:
+            df_filtered = df
+
+        # Mostrar métricas rápidas (opcional)
+        col1, col2 = st.columns(2)
+        col1.metric("Total de Productos", len(df_filtered))
+        
+        # Mostrar la tabla interactiva
+        st.dataframe(df_filtered, use_container_width=True, hide_index=True)
+        
+        # Botón para descargar la vista filtrada
+        st.download_button(
+            label="📥 Descargar lista filtrada",
+            data=df_filtered.to_csv(index=False).encode('utf-8'),
+            file_name='lista_precios_filtrada.csv',
+            mime='text/csv',
+        )
+
+    except Exception as e:
+        st.error(f"Hubo un error al procesar el archivo: {e}")
+else:
+    st.info("Esperando archivo... Por favor, sube un Excel para comenzar.")
