@@ -9,64 +9,79 @@
         body { background-color: #0d1117; color: #e6edf3; font-family: sans-serif; }
         .sidebar { background-color: #161b22; border-right: 1px solid #30363d; min-width: 320px; }
         .tabla-contenedor { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; }
-        .btn-admin { background: #238636; color: white; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; text-align: center; display: block; }
-        .btn-admin:hover { background: #2ea043; }
         
-        /* Contenedor del Logo con fondo negro igual a la app */
-        .logo-header {
-            background-color: #161b22;
-            padding: 1rem;
-            display: flex;
+        /* Botón Seleccionar Archivo Estilo Imagen */
+        .btn-admin { 
+            background: #2ea043; 
+            color: white; 
+            padding: 12px; 
+            border-radius: 8px; 
+            width: 100%; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
             justify-content: center;
-            align-items: center;
-            border-bottom: 1px solid #30363d;
+            gap: 10px;
+            transition: background 0.2s;
         }
-        .logo-header img {
-            max-width: 100%;
-            height: auto;
-            object-fit: contain;
-        }
+        .btn-admin:hover { background: #3fb950; }
+        
+        /* Estilo del Logo de la captura */
+        .logo-text { font-size: 42px; font-weight: 800; color: #e6edf3; line-height: 0.9; letter-spacing: -1px; }
+        .logo-sub { font-size: 11px; color: #8b949e; letter-spacing: 2px; font-weight: bold; margin-top: 5px; }
+        .dots { display: flex; gap: 4px; margin-top: 8px; }
+        .dot { width: 12px; height: 12px; transform: rotate(45deg); }
     </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen">
 
-    <aside class="sidebar flex flex-col gap-6">
-        <div class="logo-header">
-            <img src="Logo 2.jpg" alt="Grupo Plenos Logo">
-        </div>
-
-        <div class="px-6">
-            <div class="mt-4">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">🔍 Buscar Producto</label>
-                <input type="text" id="filtro" placeholder="Ej: Ricoh, LED, Toner..." 
-                    class="w-full bg-[#0d1117] border border-[#30363d] rounded px-4 py-2 text-white text-sm outline-none focus:border-blue-500">
-            </div>
-
-            <hr class="border-[#30363d] my-6">
-
-            <div>
-                <label class="block text-xs font-bold text-blue-400 mb-2 uppercase">⚙️ Administrador: Subir Excel</label>
-                <label for="archivoExcel" class="btn-admin">📂 Seleccionar Archivo</label>
-                <input type="file" id="archivoExcel" accept=".xlsx, .xls" class="hidden">
-                <p class="text-[10px] text-gray-500 mt-2 italic text-center">Sube el archivo aquí para actualizar la tabla.</p>
+    <aside class="sidebar p-8 flex flex-col gap-8">
+        <div class="mb-4">
+            <div class="logo-text text-gray-300">GRUPO<br><span class="text-gray-400">PLENOS</span></div>
+            <div class="dots">
+                <div class="dot bg-[#00bcd4]"></div>
+                <div class="dot bg-[#e91e63]"></div>
+                <div class="dot bg-[#ffeb3b]"></div>
+                <div class="dot bg-[#9e9e9e]"></div>
+                <div class="logo-sub ml-2 uppercase">Tecnología de Impresión</div>
             </div>
         </div>
 
-        <div id="status" class="mt-auto pb-6 text-[10px] text-center text-gray-500 font-bold uppercase">
-            Estado: Conectado ✅
+        <div class="mt-4">
+            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase flex items-center gap-2">
+                <span class="text-blue-400">🔍</span> BUSCAR PRODUCTO
+            </label>
+            <input type="text" id="filtro" placeholder="Ej: Ricoh, LED, Toner..." 
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-blue-500">
+        </div>
+
+        <div class="mt-4">
+            <label class="block text-xs font-bold text-blue-400 mb-2 uppercase flex items-center gap-2 tracking-tighter">
+                <span>⚙️</span> ADMINISTRADOR: SUBIR EXCEL
+            </label>
+            <label for="archivoExcel" class="btn-admin">
+                <span>📁</span> Seleccionar Archivo
+            </label>
+            <input type="file" id="archivoExcel" accept=".xlsx, .xls" class="hidden">
+            <p class="text-[10px] text-gray-500 mt-2 italic text-center">Sube el archivo aquí para actualizar la tabla.</p>
+        </div>
+
+        <div id="status" class="mt-auto text-[10px] text-gray-500 font-bold uppercase flex items-center justify-center gap-1">
+            ESTADO: CONECTADO <span class="text-green-500">✅</span>
         </div>
     </aside>
 
     <main class="flex-1 p-6 overflow-hidden flex flex-col">
-        <div id="vacio" class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#30363d] rounded-xl">
+        <div id="vacio" class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#30363d] rounded-xl hidden">
             <h2 class="text-2xl font-bold text-gray-600">Portal de Precios</h2>
-            <p class="text-gray-500 mt-2">Usa el botón lateral para cargar tu lista de Excel.</p>
+            <p class="text-gray-500 mt-2 text-sm">Sube un Excel en el panel lateral para visualizar los datos.</p>
         </div>
 
-        <div id="vistaDatos" class="hidden flex-1 overflow-hidden flex flex-col">
-            <div class="overflow-auto flex-1 tabla-contenedor shadow-2xl">
+        <div id="vistaDatos" class="flex-1 overflow-hidden flex flex-col">
+            <div class="overflow-auto flex-1 tabla-contenedor">
                 <table class="w-full text-left text-sm">
-                    <thead class="sticky top-0 bg-[#21262d] text-gray-400">
+                    <thead class="sticky top-0 bg-[#21262d] text-gray-400 uppercase text-[11px] font-bold">
                         <tr id="cabeceraTabla"></tr>
                     </thead>
                     <tbody id="cuerpoTabla" class="divide-y divide-[#30363d]"></tbody>
@@ -90,8 +105,7 @@
                 datos = XLSX.utils.sheet_to_json(sheet);
                 
                 if (datos.length > 0) {
-                    localStorage.setItem('plenos_data', JSON.stringify(datos));
-                    mostrarApp();
+                    localStorage.setItem('plenos_db', JSON.stringify(datos));
                     actualizarTabla(datos);
                 }
             };
@@ -99,20 +113,15 @@
         });
 
         window.onload = () => {
-            const guardados = localStorage.getItem('plenos_data');
+            const guardados = localStorage.getItem('plenos_db');
             if (guardados) {
                 datos = JSON.parse(guardados);
-                mostrarApp();
                 actualizarTabla(datos);
+            } else {
+                document.getElementById('vacio').classList.remove('hidden');
+                document.getElementById('vistaDatos').classList.add('hidden');
             }
         };
-
-        function mostrarApp() {
-            const vacio = document.getElementById('vacio');
-            const vista = document.getElementById('vistaDatos');
-            if(vacio) vacio.classList.add('hidden');
-            if(vista) vista.classList.remove('hidden');
-        }
 
         filtro.addEventListener('input', (e) => {
             const buscar = e.target.value.toLowerCase();
@@ -125,12 +134,18 @@
         function actualizarTabla(lista) {
             const head = document.getElementById('cabeceraTabla');
             const body = document.getElementById('cuerpoTabla');
+            const vista = document.getElementById('vistaDatos');
+            const vacio = document.getElementById('vacio');
+            
             head.innerHTML = ''; body.innerHTML = '';
             if (lista.length === 0) return;
 
+            vacio.classList.add('hidden');
+            vista.classList.remove('hidden');
+
             Object.keys(lista[0]).forEach(k => {
                 const th = document.createElement('th');
-                th.className = 'px-6 py-4 font-bold uppercase text-[11px]'; th.innerText = k;
+                th.className = 'px-6 py-4 border-b border-[#30363d]'; th.innerText = k;
                 head.appendChild(th);
             });
 
