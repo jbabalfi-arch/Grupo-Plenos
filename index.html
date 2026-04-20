@@ -11,33 +11,48 @@
         .tabla-contenedor { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; }
         .btn-admin { background: #238636; color: white; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; text-align: center; display: block; }
         .btn-admin:hover { background: #2ea043; }
-        /* Estilo para que el logo se adapte bien */
-        .logo-container img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+        
+        /* Contenedor del Logo con fondo negro igual a la app */
+        .logo-header {
+            background-color: #161b22;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+        }
+        .logo-header img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen">
 
-    <aside class="sidebar p-6 flex flex-col gap-6">
-        <div class="logo-container">
+    <aside class="sidebar flex flex-col gap-6">
+        <div class="logo-header">
             <img src="Logo 2.jpg" alt="Grupo Plenos Logo">
         </div>
 
-        <div class="mt-4">
-            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">🔍 Buscar Producto</label>
-            <input type="text" id="filtro" placeholder="Ej: Ricoh, LED, Toner..." 
-                class="w-full bg-[#0d1117] border border-[#30363d] rounded px-4 py-2 text-white text-sm outline-none focus:border-blue-500">
+        <div class="px-6">
+            <div class="mt-4">
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">🔍 Buscar Producto</label>
+                <input type="text" id="filtro" placeholder="Ej: Ricoh, LED, Toner..." 
+                    class="w-full bg-[#0d1117] border border-[#30363d] rounded px-4 py-2 text-white text-sm outline-none focus:border-blue-500">
+            </div>
+
+            <hr class="border-[#30363d] my-6">
+
+            <div>
+                <label class="block text-xs font-bold text-blue-400 mb-2 uppercase">⚙️ Administrador: Subir Excel</label>
+                <label for="archivoExcel" class="btn-admin">📂 Seleccionar Archivo</label>
+                <input type="file" id="archivoExcel" accept=".xlsx, .xls" class="hidden">
+                <p class="text-[10px] text-gray-500 mt-2 italic text-center">Sube el archivo aquí para actualizar la tabla.</p>
+            </div>
         </div>
 
-        <hr class="border-[#30363d]">
-
-        <div>
-            <label class="block text-xs font-bold text-blue-400 mb-2 uppercase">⚙️ Administrador: Subir Excel</label>
-            <label for="archivoExcel" class="btn-admin">📂 Seleccionar Archivo</label>
-            <input type="file" id="archivoExcel" accept=".xlsx, .xls" class="hidden">
-            <p class="text-[10px] text-gray-500 mt-2 italic text-center">Sube el archivo aquí para actualizar la tabla.</p>
-        </div>
-
-        <div id="status" class="mt-auto text-[10px] text-center text-gray-500 font-bold uppercase">
+        <div id="status" class="mt-auto pb-6 text-[10px] text-center text-gray-500 font-bold uppercase">
             Estado: Conectado ✅
         </div>
     </aside>
@@ -93,8 +108,10 @@
         };
 
         function mostrarApp() {
-            document.getElementById('vacio').classList.add('hidden');
-            document.getElementById('vistaDatos').classList.remove('hidden');
+            const vacio = document.getElementById('vacio');
+            const vista = document.getElementById('vistaDatos');
+            if(vacio) vacio.classList.add('hidden');
+            if(vista) vista.classList.remove('hidden');
         }
 
         filtro.addEventListener('input', (e) => {
