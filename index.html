@@ -2,214 +2,78 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import base64
-from io import BytesIO
 
-# --- CONFIGURACIÓN DE PÁGINA (Antes que nada) ---
-st.set_page_config(
-    page_title="Grupo Plenos - Portal de Precios",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# --- CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="Grupo Plenos | Lista de Precios", layout="wide")
 
-# --- ESTILOS CSS PERSONALIZADOS (El "Alma" del diseño) ---
-# Usamos CSS para forzar el modo oscuro profundo y estilos de tarjeta.
-# Definimos la paleta de colores basada en el logo:
-# Fondo: #1A1A1A (Carbono)
-# Tarjetas: #262626 (Gris oscuro)
-# Texto: #E0E0E0 (Gris claro)
-# Acentos (Cian, Magenta, Amarillo, Plata): #00BCD4, #E91E63, #FFEB3B, #9E9E9E
-
-st.markdown(f"""
+# --- ESTILO DARK PREMIUM (CSS) ---
+st.markdown("""
     <style>
-    /* Fondo general */
-    .stApp {{
-        background-color: #1A1A1A;
-        color: #E0E0E0;
-    }}
-    
-    /* Barra lateral */
-    .css-1d391kg {{
-        background-color: #262626;
-    }}
-    
-    /* Títulos principales */
-    h1, h2, h3, h4 {{
-        color: #FFFFFF;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }}
-
-    /* Estilo de Tarjetas para Dataframes y Contenedores */
-    div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stDataFrame"]) {{
-        background-color: #262626;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        margin-bottom: 20px;
-    }}
-    
-    /* Estilo para los inputs y botones */
-    .stTextInput>div>div>input {{
-        border-radius: 8px;
-        border: 1px solid #444;
-        background-color: #333;
-        color: white;
-    }}
-    
-    .stFileUploader>div>div>button {{
-        border-radius: 8px;
-    }}
-
-    /* Acentuar los botones principales */
-    .stButton>button {{
-        background-color: #00BCD4; /* Cian del logo */
-        color: black;
-        border-radius: 8px;
-        font-weight: bold;
-    }}
-    .stButton>button:hover {{
-        background-color: #E91E63; /* Magenta del logo */
-    }}
-
-    /* Línea de colores del logo como separador */
-    .logo-colors {{
-        display: flex;
-        gap: 8px;
-        margin-bottom: 15px;
-    }}
-    .color-dot {{
-        width: 15px;
-        height: 15px;
-        border-radius: 50%;
-    }}
+    .stApp { background-color: #0b0e14; color: #cfd8dc; }
+    [data-testid="stSidebar"] { background-color: #11151c !important; border-right: 1px solid #1f2937; }
+    .stDataFrame { border: 1px solid #1f2937; border-radius: 15px; }
+    h1, h2, h3 { color: #ffffff; font-family: 'Inter', sans-serif; }
+    .stTextInput>div>div>input { background-color: #1a1f26; color: white; border: 1px solid #374151; }
+    .stMetric { background-color: #1a1f26; border: 1px solid #374151; padding: 20px; border-radius: 12px; }
     </style>
     """, unsafe_allow_html=True)
 
-
-# --- FUNCIONES DE AYUDA (Para manejar el logo) ---
-def get_image_base64(image_path):
-    """Convierte una imagen PIL a base64 para incrustarla en HTML."""
-    img = Image.open(image_path)
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    return base64.b64encode(buffered.getvalue()).decode()
-
-# Reemplaza 'ruta/a/tu/logo_image_0.png' con la ruta real en tu computadora
-try:
-    LOGO_PATH = 'image_0.png' # Suponiendo que el usuario lo guardó con este nombre
-    logo_img_base64 = get_image_base64(LOGO_PATH)
-except FileNotFoundError:
-    logo_img_base64 = None
-    st.error(f"No se pudo encontrar el archivo de logo en '{LOGO_PATH}'. Por favor, verifica la ruta.")
-
-
-# --- COMPONENTES DE LA INTERFAZ ---
-
-# Barra Lateral (Controles)
+# --- PANEL LATERAL (LOGO Y CARGA) ---
 with st.sidebar:
-    # Mostramos el logo centrado
-    if logo_img_base64:
-        st.markdown(f'<div style="text-align: center;"><img src="data:image/png;base64,{logo_img_base64}" width="200"></div>', unsafe_allow_html=True)
-    
-    st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True) # Espaciador
-    
-    # Línea de colores del logo (HTML personalizado)
-    st.markdown("""
-        <div class="logo-colors">
-            <div class="color-dot" style="background-color: #00BCD4;"></div>
-            <div class="color-dot" style="background-color: #E91E63;"></div>
-            <div class="color-dot" style="background-color: #FFEB3B;"></div>
-            <div class="color-dot" style="background-color: #9E9E9E;"></div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.header("Panel de Control")
-    st.markdown("---")
-    
-    # Control de subida
-    uploaded_file = st.file_uploader("📥 Cargar Lista de Precios", type=["xlsx", "xls"])
-    
-    st.markdown("---")
-    # Control de búsqueda
-    search_query = st.text_input("🔍 Buscar Producto o Modelo", placeholder="Ej: Tóner 105A")
-
-    st.markdown('<div style="height: 50px;"></div>', unsafe_allow_html=True) # Espaciador inferior
-    st.info("Desarrollado para Grupo Plenos v1.0")
-
-
-# Área Principal
-if uploaded_file is not None:
+    # Intentar cargar tu logo si existe en la carpeta
     try:
-        # 1. Carga de Datos y Limpieza
-        # Cargamos el archivo y limpiamos las primeras filas y columnas vacías.
-        # Esto soluciona muchos problemas de "no muestra nada".
-        df = pd.read_excel(uploaded_file, header=0) 
-        
-        # Eliminar filas/columnas totalmente vacías
-        df = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
-        
-        # Asegurar que los nombres de las columnas sean strings
-        df.columns = [str(c).strip() for c in df.columns]
+        logo = Image.open("Logo 2.jpg")
+        st.image(logo, use_container_width=True)
+    except:
+        st.title("GRUPO PLENOS")
+    
+    st.markdown("---")
+    archivo = st.file_uploader("📂 Cargar Excel de Precios", type=["xlsx"])
+    st.markdown("---")
+    busqueda = st.text_input("🔍 Buscar en la lista:", placeholder="Modelo, marca...")
+    st.info("Sube el archivo para que tus clientes vean los precios.")
 
-        # 2. Lógica de Filtrado Inteligente
-        if search_query:
-            # Crea una máscara booleana: Verdadero si la consulta está en CUALQUIER celda de la fila
-            mask = df.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)
-            df_display = df[mask]
+# --- CUERPO DE LA APP ---
+if archivo:
+    try:
+        # Carga inteligente de Excel
+        df_raw = pd.read_excel(archivo)
+        
+        # Limpieza: quitamos filas y columnas totalmente vacías
+        df = df_raw.dropna(how='all', axis=0).dropna(how='all', axis=1)
+        
+        # Si los títulos no están en la primera fila, los buscamos
+        if "Unnamed" in str(df.columns[0]):
+            df.columns = df.iloc[0]
+            df = df[1:]
+        
+        # Filtrado en tiempo real
+        if busqueda:
+            mask = df.apply(lambda row: row.astype(str).str.contains(busqueda, case=False).any(), axis=1)
+            df_final = df[mask]
         else:
-            df_display = df
+            df_final = df
 
-        # 3. Renderizado de la Interfaz Amigable
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            st.subheader("Consultor de Lista de Precios Activa")
-            if search_query:
-                st.write(f"Mostrando resultados para: **'{search_query}'**")
-        
-        with col2:
-            st.metric("Total de Ítems Visibles", len(df_display))
+        # Encabezado
+        st.header("📋 Lista de Precios Oficial")
+        col1, col2 = st.columns(2)
+        col1.metric("Productos encontrados", len(df_final))
+        col2.metric("Estado", "Archivo Actualizado")
 
-        # El Dataframe con estilo de tarjeta (gracias al CSS de arriba)
-        # Usamos use_container_width para que ocupe todo el ancho.
-        # hide_index=True para un aspecto más limpio.
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
+        # Tabla de Datos
+        st.dataframe(df_final, use_container_width=True, hide_index=True)
         
-        # Botón de descarga para la vista actual
-        st.download_button(
-            label="📥 Descargar Vista Actual (CSV)",
-            data=df_display.to_csv(index=False).encode('utf-8'),
-            file_name='grupo_plenos_precios_filtrados.csv',
-            mime='text/csv',
-        )
-
-        st.success(f"Se han cargado {len(df_display)} registros correctamente.")
+        # Descarga para el cliente
+        csv = df_final.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Descargar esta selección (CSV)", data=csv, file_name="precios_plenos.csv")
 
     except Exception as e:
-        # Muestra un error detallado pero controlado
-        st.error(f"❌ Hubo un error al procesar el archivo Excel.")
-        st.exception(e) # Esto muestra el trazo del error técnico para depurar.
-        st.warning("Consejo: Asegúrate de que tu Excel tenga una primera fila limpia con los nombres de las columnas (Descripción, Precio, etc.) sin celdas combinadas.")
-
+        st.error("Error al leer el archivo. Verifica que la primera hoja contenga los datos.")
 else:
-    # Estado inicial: Pantalla de Bienvenida
-    col1, col2 = st.columns([1, 2])
-    
-    with col1:
-        st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-        if logo_img_base64:
-             st.markdown(f'<img src="data:image/png;base64,{logo_img_base64}" width="100%">', unsafe_allow_html=True)
-
-    with col2:
-        st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-        st.title("Bienvenido al Portal de Precios de Grupo Plenos")
-        st.markdown("""
-        Esta herramienta está diseñada para facilitar la consulta rápida de precios y stock. 
-        
-        **Para comenzar, por favor utiliza el panel lateral izquierdo:**
-        
-        1.  **Sube tu archivo Excel** con la lista de precios más reciente.
-        2.  Utiliza el campo de **búsqueda** para encontrar productos al instante.
-        
-        La plataforma se ajustará automáticamente a tu archivo.
-        """)
+    # Pantalla de Bienvenida
+    st.markdown(f"""
+        <div style="text-align: center; margin-top: 100px; padding: 40px; border: 1px dashed #374151; border-radius: 20px;">
+            <h1 style="color: #4b5563;">Bienvenido al Portal de Grupo Plenos</h1>
+            <p style="color: #4b5563;">Esperando carga de inventario en el panel lateral...</p>
+        </div>
+    """, unsafe_allow_html=True)
