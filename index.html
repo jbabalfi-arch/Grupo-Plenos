@@ -2,13 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Grupo Plenos | Portal de Precios</title>
+    <title>Grupo Plenos | Lista de Precios Oficial</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0d1117; color: #e6edf3; font-family: sans-serif; }
         .sidebar { background-color: #161b22; border-right: 1px solid #30363d; }
         .tabla-contenedor { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; }
+        .loading { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen">
@@ -25,59 +27,57 @@
         </div>
 
         <div class="mt-4">
-            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">1. Cargar Archivo Excel</label>
-            <input type="file" id="archivoExcel" accept=".xlsx, .xls" 
-                class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-        </div>
-
-        <div class="mt-4">
-            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">2. Buscar Producto</label>
-            <input type="text" id="filtro" placeholder="Ej: Ricoh 301..." 
+            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">Buscar Producto</label>
+            <input type="text" id="filtro" placeholder="Ej: Ricoh 301, LED..." 
                 class="w-full bg-[#0d1117] border border-[#30363d] rounded px-4 py-2 text-white text-sm outline-none focus:border-blue-500">
+        </div>
+        
+        <div id="status" class="text-[10px] text-blue-400 text-center uppercase font-bold tracking-tighter mt-auto">
+            Conectando con el servidor...
         </div>
     </aside>
 
     <main class="flex-1 p-6 overflow-hidden flex flex-col">
-        <div id="mensajeInicial" class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#30363d] rounded-xl">
-            <h2 class="text-2xl font-bold text-gray-600">Portal de Consulta</h2>
-            <p class="text-gray-500 mt-2 text-sm">Selecciona tu Excel en el panel izquierdo para ver los precios.</p>
-        </div>
-
-        <div id="vistaDatos" class="hidden flex-1 overflow-hidden flex flex-col">
+        <div id="vistaDatos" class="flex-1 overflow-hidden flex flex-col">
             <div class="overflow-auto flex-1 tabla-contenedor">
                 <table class="w-full text-left text-sm">
                     <thead class="sticky top-0 bg-[#21262d] text-gray-400">
                         <tr id="cabeceraTabla"></tr>
                     </thead>
-                    <tbody id="cuerpoTabla" class="divide-y divide-[#30363d]"></tbody>
+                    <tbody id="cuerpoTabla" class="divide-y divide-[#30363d]">
+                        </tbody>
                 </table>
             </div>
         </div>
     </main>
 
     <script>
+        // CONFIGURACIÓN IMPORTANTE: 
+        // 1. Sube tu Excel a Google Drive.
+        // 2. Ponlo como "Cualquier persona con el enlace puede leer".
+        // 3. Pega el enlace de descarga directa aquí abajo:
+        const URL_EXCEL = 'TU_LINK_DE_DESCARGA_DIRECTA_AQUI';
+
         let datos = [];
-        const input = document.getElementById('archivoExcel');
         const filtro = document.getElementById('filtro');
 
-        // FUNCIÓN PARA CARGAR EL EXCEL
-        input.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const data = event.target.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
+        // Función para cargar el Excel desde una URL
+        async function cargarExcelDesdeServidor() {
+            try {
+                const response = await fetch(URL_EXCEL);
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
                 const sheetName = workbook.SheetNames[0];
                 datos = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 
-                if (datos.length > 0) {
-                    document.getElementById('mensajeInicial').classList.add('hidden');
-                    document.getElementById('vistaDatos').classList.remove('hidden');
-                    actualizarTabla(datos);
-                }
-            };
-            reader.readAsBinaryString(file);
-        });
+                actualizarTabla(datos);
+                document.getElementById('status').innerText = 'Lista Actualizada ✅';
+                document.getElementById('status').classList.remove('loading');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('status').innerText = 'Error al conectar ❌';
+            }
+        }
 
         // FUNCIÓN PARA FILTRAR
         filtro.addEventListener('input', (e) => {
@@ -95,7 +95,6 @@
 
             if (lista.length === 0) return;
 
-            // Crear encabezados
             Object.keys(lista[0]).forEach(k => {
                 const th = document.createElement('th');
                 th.className = 'px-6 py-4';
@@ -103,7 +102,6 @@
                 head.appendChild(th);
             });
 
-            // Crear filas
             lista.forEach(r => {
                 const tr = document.createElement('tr');
                 Object.values(r).forEach(v => {
@@ -115,6 +113,9 @@
                 body.appendChild(tr);
             });
         }
+
+        // Ejecutar carga al abrir la app
+        window.onload = cargarExcelDesdeServidor;
     </script>
 </body>
 </html>
